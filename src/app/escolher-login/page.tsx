@@ -34,17 +34,17 @@ export default function EscolherLoginPage() {
         </button>
 
         <button
-          onClick={() => router.push('/login?tipo=logista')}
+          onClick={() => router.push('/login?tipo=lojista')}
           className="text-[#016DA7] w-full bg-transparent border-2 border-[#016DA7] font-semibold py-3 rounded-lg hover:bg-[#016DA7] hover:text-white transition"
         >
-          Entrar como Logista
+          Entrar como Lojista
         </button>
       </div>
 
       {/* Rodapé opcional */}
-      <p className="mt-10 text-xs text-gray-300 text-center">
+      <p className="mt-10 text-xs text-black text-center">
         Ao continuar, você concorda com nossos <br />
-        <span className="underline cursor-pointer hover:text-white">
+        <span className="underline cursor-pointer text-black">
           Termos de uso e Política de privacidade
         </span>
       </p>

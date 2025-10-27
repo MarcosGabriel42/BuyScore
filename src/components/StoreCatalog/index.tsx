@@ -2,29 +2,25 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 
 interface Product {
   id: number;
   name: string;
-  restaurant: string;
   price: string;
   image: string;
 }
 
-interface ProductCarouselProps {
-  title: string;
+interface StoreCatalogProps {
+  category: string;
   color?: string;
   products: Product[];
-  seeMoreLink: string;
 }
 
-export default function ProductCarousel({
-  title,
+export default function StoreCatalog({
+  category,
   color,
   products,
-  seeMoreLink,
-}: ProductCarouselProps) {
+}: StoreCatalogProps) {
   const router = useRouter();
 
   return (
@@ -33,10 +29,10 @@ export default function ProductCarousel({
         className="text-lg sm:text-2xl font-bold mb-3 sm:mb-4 px-2"
         style={{ color }}
       >
-        {title}
+        {category}
       </h2>
 
-      {/* Scroll horizontal adaptável e 100% fluido */}
+      {/* Lista horizontal (scrollável) */}
       <div className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2 sm:pb-4 px-2 snap-x snap-mandatory touch-pan-x w-full">
         {products.map((product) => (
           <div
@@ -56,26 +52,12 @@ export default function ProductCarousel({
               <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">
                 {product.name}
               </h3>
-              <p className="text-gray-500 text-xs sm:text-sm truncate">
-                {product.restaurant}
-              </p>
               <p className="text-[#016DA7] font-bold mt-1 text-sm sm:text-base">
                 {product.price}
               </p>
             </div>
           </div>
         ))}
-
-        {/* Botão "Ver mais" */}
-        <button
-          onClick={() => router.push(seeMoreLink)}
-          className="min-w-[70%] sm:min-w-[180px] md:min-w-[220px] bg-gray-100 rounded-xl flex flex-col justify-center items-center hover:bg-gray-200 transition flex-shrink-0 snap-start"
-        >
-          <ChevronRight size={32} className="text-[#016DA7]" />
-          <span className="text-[#016DA7] font-semibold mt-1 text-sm sm:text-base">
-            Ver mais
-          </span>
-        </button>
       </div>
     </section>
   );

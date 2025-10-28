@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { Utensils, ShoppingCart, Pill, Grid } from 'lucide-react';
+import Link from 'next/link';
 import BottomNav from '@/components/BottomNav';
 import ProductCarousel from '@/components/ProductCarousel';
 
 export default function HomePage() {
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
 
   const filters = [
     { id: 'restaurantes', label: 'Restaurantes', color: '#00a944', icon: <Utensils size={30} /> },
@@ -14,10 +13,6 @@ export default function HomePage() {
     { id: 'farmacias', label: 'Farmácias', color: '#FF5656', icon: <Pill size={30} /> },
     { id: 'outros', label: 'Outros Serviços', color: '#5686FF', icon: <Grid size={30} /> },
   ];  
-
-  const handleSelect = (id: string) => {
-    setSelectedFilter(id === selectedFilter ? null : id);
-  };
 
   const sampleProducts = [
     { id: 1, name: "Pizza Margherita", restaurant: "Bella Itália", price: "R$ 39,90", image: "/img/pizza.jpg" },
@@ -34,20 +29,19 @@ export default function HomePage() {
         {/* === GRID DE FILTROS (4 LADO A LADO) === */}
         <div className="flex flex-wrap justify-between gap-3 sm:gap-5 mb-10 w-full">
           {filters.map((filter) => (
-            <button
+            <Link
               key={filter.id}
-              onClick={() => handleSelect(filter.id)}
+              href={`/categoria/${filter.id}`}
               className="flex flex-col items-center justify-center rounded-xl p-4 sm:p-6 text-white font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex-1 min-w-[45%] sm:min-w-[150px] max-w-[200px]"
               style={{
-                backgroundColor:
-                  selectedFilter === filter.id ? `${filter.color}E6` : filter.color,
+                backgroundColor: filter.color,
               }}
             >
               <div className="mb-2 sm:mb-3">{filter.icon}</div>
               <span className="text-xs sm:text-sm text-center leading-tight">
                 {filter.label}
               </span>
-            </button>
+            </Link>
           ))}
         </div>
 

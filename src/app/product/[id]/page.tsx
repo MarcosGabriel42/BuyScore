@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import BottomNav from "@/components/BottomNav"; // ⬅️ import do menu inferior
 
 export default function ProductPage() {
   const { id } = useParams();
@@ -24,8 +23,8 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 px-4 py-8 flex flex-col items-center">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-gray-50 pb-24 px-4 py-8">
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Imagem principal */}
         <div className="relative w-full h-60">
           <Image
@@ -69,11 +68,6 @@ export default function ProductPage() {
             Realizar troca dos pontos
           </button>
         </div>
-      </div>
-
-      {/* Menu inferior fixo */}
-      <div className="fixed bottom-0 w-full max-w-md">
-        <BottomNav />
       </div>
     </div>
   );

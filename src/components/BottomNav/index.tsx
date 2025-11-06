@@ -10,7 +10,7 @@ export default function BottomNav() {
 
   const tabs = [
     { id: 'home', label: 'Página Inicial', icon: <Home size={20} />, href: '/home' },
-    { id: 'favorites', label: 'Favoritos', icon: <Star size={20} />, href: '/favorites' },
+    { id: 'favoritos', label: 'Favoritos', icon: <Star size={20} />, href: '/favoritos' },
     { id: 'profile', label: 'Perfil', icon: <User size={20} />, href: '/profile' },
   ];
 

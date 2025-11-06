@@ -1,28 +1,21 @@
 'use client';
 
-import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer"; 
-import { usePathname } from "next/navigation";
+import './globals.css';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { usePathname } from 'next/navigation';
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Ocultar Header e Footer em login e cadastro
-  const hideLayout = ["/login", "/cadastro"].includes(pathname);
+  // Rotas que não terão Header e Footer
+  const hideLayout = pathname === '/escolher-login' || pathname.startsWith('/login');
 
   return (
-    <html lang="pt-BR">
-      <body className="antialiased bg-gray-50 text-gray-900">
-        {/* Renderiza Header e Footer apenas se NÃO estiver nas páginas de login ou cadastro */}
+    <html lang="pt-br">
+      <body className="min-h-screen bg-gray-50 text-black">
         {!hideLayout && <Header />}
-
-        <main>{children}</main>
-
+        {children}
         {!hideLayout && <Footer />}
       </body>
     </html>

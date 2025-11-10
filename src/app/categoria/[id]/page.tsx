@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import BottomNav from '@/components/BottomNav';
+import QrCodeButton from '@/components/QrCodeButton';
 
 // Simulação de catálogo de produtos por categoria
 const allProducts = {
@@ -83,7 +84,9 @@ export default function CategoriaPage() {
 
       {/* BottomNav fixo */}
       <div className="fixed bottom-0 w-full max-w-6xl">
+        <QrCodeButton />
         <BottomNav />
+        
       </div>
     </div>
   );

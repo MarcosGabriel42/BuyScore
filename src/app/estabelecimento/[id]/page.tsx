@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import StoreCatalog from "@/components/StoreCatalog"; // ⬅️ novo import
+import StoreCatalog from "@/components/StoreCatalog";
+import QrCodeButton from "@/components/QrCodeButton";
 
 export default function EstabelecimentoPage() {
   const { id } = useParams();
@@ -96,6 +97,7 @@ export default function EstabelecimentoPage() {
 
       {/* Menu de navegação inferior */}
       <div className="fixed bottom-0 w-full max-w-6xl">
+        <QrCodeButton />      
         <BottomNav />
       </div>
     </div>

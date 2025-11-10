@@ -148,3 +148,18 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes pulse-soft {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(1, 109, 167, 0.5);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 15px 5px rgba(1, 109, 167, 0.3);
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2.2s infinite ease-in-out;
+}

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import BottomNav from '@/components/BottomNav';
 import { LogOut, User, Edit } from 'lucide-react';
-
+import QrCodeButton from '@/components/QrCodeButton';
 
 export default function PerfilPage() {
   const usuario = {
@@ -48,8 +48,9 @@ export default function PerfilPage() {
           Sair
         </Button>
       </div>
-
+      <QrCodeButton />
       <BottomNav />
+
     </div>
   );
 }

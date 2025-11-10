@@ -2,7 +2,7 @@
 
 import LojaFavoritaCard from '@/components/LojaFavoritaCard';
 import BottomNav from '@/components/BottomNav';
-
+import QrCodeButton from '@/components/QrCodeButton';
 // Dados simulados (futuramente virão da API)
 const lojasFavoritas = [
   { id: 12, nome: 'Bella Itália', categoria: 'Restaurantes' },
@@ -30,6 +30,7 @@ export default function FavoritosPage() {
       </div>
 
       <BottomNav />
+      <QrCodeButton />      
     </div>
   );
 }

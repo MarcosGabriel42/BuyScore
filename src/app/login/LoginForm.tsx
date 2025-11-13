@@ -53,7 +53,7 @@ export default function LoginForm({ tipo }: LoginFormProps) {
       if (tipo === "lojista") {
         router.push("/dashboard-lojista");
       } else {
-        router.push("/dashboard-cliente");
+        router.push("/home");
       }
 
       console.log("Login realizado com sucesso:", data);

@@ -46,10 +46,11 @@ export const auth = {
 };
 
 // Constantes da API
-export const API_BASE_URL = '/api/backend'; // Usando proxy do Next.js
+export const API_BASE_URL = '/api/backend';
 
 export const API_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/auth/login`,
   REGISTER: `${API_BASE_URL}/auth/register`,
-  // Adicione outros endpoints conforme necessário
+  CADASTRO_CLIENTE: `${API_BASE_URL}/cliente`,
+  TOP_COMERCIOS: `${API_BASE_URL}/comercio/top5/setores-principais`,
 };

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { auth, API_ENDPOINTS } from "@/utils/auth";
 
 interface LoginFormProps {
   tipo: "cliente" | "lojista";
@@ -11,10 +13,57 @@ interface LoginFormProps {
 export default function LoginForm({ tipo }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Login como ${tipo}:`, { email, password });
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(API_ENDPOINTS.LOGIN, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          senha: password
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erro ao fazer login");
+      }
+
+      const data = await response.json();
+      
+      // Salvar token - esperando que o backend retorne apenas { "token": "jwt_token_here" }
+      if (data.token) {
+        auth.saveToken(data.token);
+      } else if (typeof data === 'string') {
+        // Caso o backend retorne apenas o token como string
+        auth.saveToken(data);
+      }
+      
+      // Redirecionar baseado no tipo de usuário
+      if (tipo === "lojista") {
+        router.push("/dashboard-lojista");
+      } else {
+        router.push("/dashboard-cliente");
+      }
+
+      console.log("Login realizado com sucesso:", data);
+      
+    } catch (err: any) {
+      setError(err.message || "Erro interno do servidor");
+      console.error("Erro no login:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,6 +90,13 @@ export default function LoginForm({ tipo }: LoginFormProps) {
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
+          {/* Exibir erro se houver */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               E-mail
@@ -51,7 +107,8 @@ export default function LoginForm({ tipo }: LoginFormProps) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-3 text-black bg-gray-100 focus:bg-white focus:ring-[#016DA7] focus:border-[#016DA7]"
+              disabled={isLoading}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-3 text-black bg-gray-100 focus:bg-white focus:ring-[#016DA7] focus:border-[#016DA7] disabled:opacity-50"
             />
           </div>
 
@@ -65,15 +122,17 @@ export default function LoginForm({ tipo }: LoginFormProps) {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-3 text-black bg-gray-100 focus:bg-white focus:ring-[#016DA7] focus:border-[#016DA7]"
+              disabled={isLoading}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-3 text-black bg-gray-100 focus:bg-white focus:ring-[#016DA7] focus:border-[#016DA7] disabled:opacity-50"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 px-4 bg-[#016DA7] text-white font-semibold rounded-md hover:bg-blue-700 transition"
+            disabled={isLoading}
+            className="w-full py-3 px-4 bg-[#016DA7] text-white font-semibold rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Entrar
+            {isLoading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 

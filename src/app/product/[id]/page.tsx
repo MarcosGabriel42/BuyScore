@@ -1,20 +1,30 @@
 'use client';
 
-import Image from "next/image";
-import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import ProductDetailCard from "@/components/ProductDetailCard";
+import QrPopup from "@/components/QrCodePopup";
+import BottomNav from "@/components/BottomNav";
+import QrCodeButton from "@/components/QrCodeButton";
 
 export default function ProductPage() {
   const { id } = useParams();
+  const safeId =
+    Array.isArray(id) ? id.join(",") : id ?? "";
+  const [showPopup, setShowPopup] = useState(false);
+  const [code, setCode] = useState("");
 
-  // Produto fictício só para testar
+  // Função para gerar código aleatório de 5 caracteres
+  const generateCode = () =>
+    Math.random().toString(36).substring(2, 7).toUpperCase();
+
   const product = {
-    id,
+    id: safeId,
     name: "Pizza Margherita",
     restaurant: "Bella Itália",
-    restaurantId: 12, // ID fictício do restaurante
+    restaurantId: 12,
     category: "Restaurantes",
-    price: "R$ 39,90",
+    price: "600 pts.",
     image: "/img/pizza.jpg",
     description:
       "Deliciosa pizza com molho de tomate artesanal, mussarela fresca e folhas de manjericão. Massa crocante e leve, perfeita para saborear a qualquer hora.",
@@ -22,53 +32,23 @@ export default function ProductPage() {
     hours: "Seg a Dom: 11h às 23h",
   };
 
+  const handleOpenPopup = () => {
+    setCode(generateCode());
+    setShowPopup(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24 px-4 py-8">
-      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-        {/* Imagem principal */}
-        <div className="relative w-full h-60">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover"
-          />
-        </div>
+      <ProductDetailCard
+        {...product}
+        onRedeem={handleOpenPopup}
+      />
 
-        <div className="p-5">
-          <h1 className="text-2xl font-bold text-gray-800">{product.name}</h1>
+      {/* Popup */}
+      {showPopup && <QrPopup code={code} onClose={() => setShowPopup(false)} />}
 
-          {/* Nome do restaurante com link */}
-          <p className="text-gray-500 text-sm mb-2">
-            <Link
-              href={`/estabelecimento/${product.restaurantId}`}
-              className="text-[#016DA7] hover:underline font-medium"
-            >
-              {product.restaurant}
-            </Link>{" "}
-            | {product.category}
-          </p>
-
-          <p className="text-[#016DA7] text-xl font-bold mb-3">
-            {product.price}
-          </p>
-
-          <p className="text-gray-700 text-sm mb-4">{product.description}</p>
-
-          <div className="border-t pt-3 text-sm text-gray-600">
-            <p>
-              <strong>Endereço:</strong> {product.address}
-            </p>
-            <p>
-              <strong>Horário:</strong> {product.hours}
-            </p>
-          </div>
-
-          <button className="mt-6 w-full bg-[#016DA7] text-white font-semibold py-3 rounded-lg hover:bg-[#015B8A] transition">
-            Realizar troca dos pontos
-          </button>
-        </div>
-      </div>
+      <QrCodeButton />
+      <BottomNav />
     </div>
   );
 }

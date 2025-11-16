@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#e1bee7"/>
+  <rect x="160" y="150" width="320" height="30" rx="10" fill="#8d6e63"/>
+  <rect x="160" y="180" width="320" height="30" rx="10" fill="#4caf50"/>
+  <rect x="160" y="210" width="320" height="30" rx="10" fill="#fbc02d"/>
+  <rect x="160" y="240" width="320" height="30" rx="10" fill="#8d6e63"/>
+  <text x="50%" y="90%" dominant-baseline="middle" text-anchor="middle" fill="#4a148c" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Outros (placeholder)</text>
+</svg>

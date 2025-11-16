@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#b3e5fc"/>
+  <rect x="160" y="140" width="320" height="80" rx="16" fill="#263238"/>
+  <rect x="190" y="155" width="90" height="50" rx="8" fill="#ff7043"/>
+  <rect x="290" y="155" width="90" height="50" rx="8" fill="#ff7043"/>
+  <rect x="390" y="155" width="60" height="50" rx="8" fill="#ff7043"/>
+  <circle cx="235" cy="180" r="12" fill="#fff"/>
+  <circle cx="335" cy="180" r="12" fill="#fff"/>
+  <circle cx="420" cy="180" r="12" fill="#fff"/>
+  <text x="50%" y="90%" dominant-baseline="middle" text-anchor="middle" fill="#01579b" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Farmácias (placeholder)</text>
+</svg>

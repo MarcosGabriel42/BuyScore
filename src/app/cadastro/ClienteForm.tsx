@@ -3,9 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { API_ENDPOINTS, auth } from "@/utils/auth";
 
 export default function ClienteForm() {
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [form, setForm] = useState({
     nome: "",
     cpf: "",
@@ -15,9 +19,13 @@ export default function ClienteForm() {
     cep: "",
     numero: "",
     logradouro: "",
-    estado: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    uf: "",
     senha: "",
     confirmarSenha: "",
+    fotoUsuario: ""
   });
   const [error, setError] = useState("");
 
@@ -35,19 +43,72 @@ export default function ClienteForm() {
     setStep(2);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.cep || !form.numero || !form.logradouro || !form.estado || !form.senha || !form.confirmarSenha) {
+    
+    // Validação dos campos obrigatórios
+    if (!form.cep || !form.numero || !form.logradouro || !form.bairro || !form.cidade || !form.uf || !form.senha || !form.confirmarSenha) {
       setError("Preencha todos os campos obrigatórios.");
       return;
     }
+    
     if (form.senha !== form.confirmarSenha) {
       setError("As senhas não coincidem.");
       return;
     }
+    
     setError("");
-    console.log("Cadastro cliente:", form);
-    alert("Cadastro realizado com sucesso!");
+    setIsLoading(true);
+
+    try {
+      // Preparar dados para a API
+      const dadosCadastro = {
+        nome: form.nome,
+        email: form.email,
+        senha: form.senha,
+        fotoUsuario: form.fotoUsuario || "https://exemplo.com/foto-default.jpg", // URL padrão se não informada
+        cep: form.cep,
+        logradouro: form.logradouro,
+        complemento: form.complemento,
+        bairro: form.bairro,
+        cidade: form.cidade,
+        numero: parseInt(form.numero),
+        uf: form.uf
+      };
+
+      const response = await fetch(API_ENDPOINTS.CADASTRO_CLIENTE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dadosCadastro),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erro ao realizar cadastro");
+      }
+
+      const data = await response.json();
+      console.log("Cadastro realizado com sucesso:", data);
+      
+      // Salvar token retornado pela API de cadastro
+      if (data.token) {
+        auth.saveToken(data.token);
+      } else if (typeof data === 'string') {
+        // Caso o backend retorne apenas o token como string
+        auth.saveToken(data);
+      }
+      
+      // Redirecionar diretamente para home (usuário já está logado)
+      router.push("/home");
+      
+    } catch (err: any) {
+      setError(err.message || "Erro interno do servidor");
+      console.error("Erro no cadastro:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -75,15 +136,23 @@ export default function ClienteForm() {
         ) : (
           <>
             <input type="text" id="cep" placeholder="CEP" value={form.cep} onChange={handleChange} className="border p-3 rounded w-full text-black" />
-            <input type="text" id="numero" placeholder="Número" value={form.numero} onChange={handleChange} className="border p-3 rounded w-full text-black" />
             <input type="text" id="logradouro" placeholder="Logradouro" value={form.logradouro} onChange={handleChange} className="border p-3 rounded w-full text-black" />
-            <input type="text" id="estado" placeholder="Estado" value={form.estado} onChange={handleChange} className="border p-3 rounded w-full text-black" />
+            <input type="text" id="numero" placeholder="Número" value={form.numero} onChange={handleChange} className="border p-3 rounded w-full text-black" />
+            <input type="text" id="complemento" placeholder="Complemento (opcional)" value={form.complemento} onChange={handleChange} className="border p-3 rounded w-full text-black" />
+            <input type="text" id="bairro" placeholder="Bairro" value={form.bairro} onChange={handleChange} className="border p-3 rounded w-full text-black" />
+            <input type="text" id="cidade" placeholder="Cidade" value={form.cidade} onChange={handleChange} className="border p-3 rounded w-full text-black" />
+            <input type="text" id="uf" placeholder="UF (ex: SP)" value={form.uf} onChange={handleChange} className="border p-3 rounded w-full text-black" maxLength={2} />
+            <input type="url" id="fotoUsuario" placeholder="URL da foto (opcional)" value={form.fotoUsuario} onChange={handleChange} className="border p-3 rounded w-full text-black" />
             <input type="password" id="senha" placeholder="Senha" value={form.senha} onChange={handleChange} className="border p-3 rounded w-full text-black" />
             <input type="password" id="confirmarSenha" placeholder="Confirmar senha" value={form.confirmarSenha} onChange={handleChange} className="border p-3 rounded w-full text-black" />
-            <button type="submit" className="w-full py-3 bg-[#016DA7] text-white font-semibold rounded-md hover:bg-blue-700 transition">
-              Finalizar cadastro
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              className="w-full py-3 bg-[#016DA7] text-white font-semibold rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Cadastrando..." : "Finalizar cadastro"}
             </button>
-            <button type="button" onClick={() => setStep(1)} className="w-full py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+            <button type="button" onClick={() => setStep(1)} disabled={isLoading} className="w-full py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition disabled:opacity-50">
               Voltar
             </button>
           </>

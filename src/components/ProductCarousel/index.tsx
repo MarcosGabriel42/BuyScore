@@ -10,6 +10,7 @@ interface Product {
   restaurant: string;
   price: string;
   image: string;
+  href?: string; // link customizado opcional
 }
 
 interface ProductCarouselProps {
@@ -38,10 +39,12 @@ export default function ProductCarousel({
 
       {/* Scroll horizontal adaptável e 100% fluido */}
       <div className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2 sm:pb-4 px-2 snap-x snap-mandatory touch-pan-x w-full">
-        {products.map((product) => (
+        {products.map((product) => {
+          const destination = product.href ?? `/estabelecimento/${product.id}`;
+          return (
           <div
             key={product.id}
-            onClick={() => router.push(`/product/${product.id}`)}
+            onClick={() => router.push(destination)}
             className="min-w-[70%] sm:min-w-[180px] md:min-w-[220px] bg-white rounded-xl shadow-md flex-shrink-0 cursor-pointer hover:scale-105 transition-transform snap-start"
           >
             <div className="relative w-full h-32 sm:h-36 rounded-t-xl overflow-hidden">
@@ -64,7 +67,8 @@ export default function ProductCarousel({
               </p>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         {/* Botão "Ver mais" */}
         <button

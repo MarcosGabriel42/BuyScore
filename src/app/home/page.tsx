@@ -131,8 +131,9 @@ export default function HomePage() {
       name: comercio.razaoSocial,
       restaurant: comercio.descricao || comercio.seguimento || 'Estabelecimento',
       // Exibimos os pontos do cliente como "preço" por falta de campo específico
-      price: typeof comercio.pontosDoCliente === 'number' ? `${comercio.pontosDoCliente} pontos` : '—',
+      price: typeof comercio.pontosDoCliente === 'number' ? String(comercio.pontosDoCliente) : '—',
       image: placeholder,
+      href: `/estabelecimento/${comercio.comercioId}`, // navega para página do estabelecimento
     }));
   };
 

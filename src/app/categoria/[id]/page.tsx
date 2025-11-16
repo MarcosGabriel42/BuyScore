@@ -103,6 +103,7 @@ export default function CategoriaPage() {
       restaurant: c.descricao || c.seguimento || 'Estabelecimento',
       price: typeof c.pontosDoCliente === 'number' ? String(c.pontosDoCliente) : '—',
       image: placeholder,
+      href: `/estabelecimento/${c.comercioId}`, // navega para página do estabelecimento
     }));
   }, [items, categoryId]);
 

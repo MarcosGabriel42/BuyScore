@@ -62,6 +62,7 @@ export default function EstabelecimentoPage() {
   const comercioId = id as string;
 
   const [favorito, setFavorito] = useState(false);
+  const [isFavLoading, setIsFavLoading] = useState(false);
   const [produtos, setProdutos] = useState<ApiProduto[]>([]);
   const [estabelecimentoNome, setEstabelecimentoNome] = useState<string>('Estabelecimento');
   const [categoria, setCategoria] = useState<string>('');
@@ -122,10 +123,71 @@ export default function EstabelecimentoPage() {
     }
   };
 
+  const checkIfFavorited = async () => {
+    try {
+      const token = auth.getToken();
+      if (!token) return;
+
+      const url = `http://localhost:8081/cliente/comercio-favoritos`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) return;
+
+      const json = await res.json();
+      const favoritos = Array.isArray(json) ? json : [];
+      
+      // Verifica se o comercioId está na lista de favoritos
+      const isFav = favoritos.some((fav: any) => fav.id === comercioId);
+      setFavorito(isFav);
+    } catch (err) {
+      // Silently fail - favorito permanece false
+    }
+  };
+
   useEffect(() => {
-    if (comercioId) fetchProdutos();
+    if (comercioId) {
+      fetchProdutos();
+      checkIfFavorited();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comercioId]);
+
+  const toggleFavorito = async () => {
+    if (isFavLoading) return;
+    try {
+      setIsFavLoading(true);
+      const token = auth.getToken();
+      if (!token) throw new Error('Token de autenticação não encontrado');
+
+      const url = `http://localhost:8081/cliente/comercio-favoritos/${encodeURIComponent(comercioId)}`;
+      const method = favorito ? 'DELETE' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Erro ao ${favorito ? 'remover' : 'adicionar'} favorito: ${res.status}`);
+      }
+
+      // Atualiza estado local após sucesso
+      setFavorito(!favorito);
+    } catch (err: any) {
+      alert(err?.message || 'Erro ao atualizar favorito');
+    } finally {
+      setIsFavLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center pb-20">
@@ -148,7 +210,7 @@ export default function EstabelecimentoPage() {
 
             <FavoriteButton
               isFavorite={favorito}
-              onToggle={() => setFavorito(!favorito)}
+              onToggle={toggleFavorito}
             />
           </div>
         </div>
@@ -195,10 +257,10 @@ export default function EstabelecimentoPage() {
                 id={p.id}
                 name={p.nome}
                 restaurant={estabelecimentoNome}
-                  price={String(pontos)}
+                price={String(pontos)}
                 image={placeholder}
-                  priceSuffix="Pontos" // exibe 'Pontos'
-                disableLink // não navega ao clicar
+                priceSuffix="Pontos" // exibe 'Pontos'
+                href={`/product/${p.id}`} // redireciona para página do produto
               />
               );
             })}

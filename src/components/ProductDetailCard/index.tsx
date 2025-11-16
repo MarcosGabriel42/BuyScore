@@ -7,7 +7,7 @@ interface ProductDetailCardProps {
   id: string | number;
   name: string;
   restaurant: string;
-  restaurantId: number;
+  restaurantId: number | string;
   category: string;
   price: string;
   image: string;

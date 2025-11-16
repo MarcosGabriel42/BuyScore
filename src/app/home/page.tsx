@@ -50,7 +50,7 @@ export default function HomePage() {
 
       // Helper para buscar por seguimento com limite fixo 5
       const fetchBySegment = async (segment: string): Promise<ApiComercio[]> => {
-        const url = `http://localhost:8081/comercio/top-pontos?seguimento=${encodeURIComponent(segment)}&limite=5`;
+        const url = `http://localhost:8081/comercio/top-seguimento?seguimento=${encodeURIComponent(segment)}&limite=5`;
         const res = await fetch(url, {
           method: 'GET',
           headers: {
@@ -116,16 +116,16 @@ export default function HomePage() {
 
   // Placeholder de imagens "commitadas" por segmento (temporário)
   const imageBySegment: Record<string, string> = {
-    restaurantes: '/img/pizza.jpg',
-    mercados: '/img/prato.jpg',
-    farmacias: '/img/sushi.jpg',
-    outros: '/img/burger.jpg',
+    restaurantes: '/img/pizza.svg',
+    mercados: '/img/prato.svg',
+    farmacias: '/img/sushi.svg',
+    outros: '/img/burger.svg',
   };
 
   // Função para converter dados da API para o formato esperado pelo ProductCarousel
   // Para imagens: por enquanto usaremos placeholders estáticos "commitados" no repositório.
   const formatProductsForCarousel = (comerciosArray: ApiComercio[] = [], segment: keyof typeof imageBySegment) => {
-    const placeholder = imageBySegment[segment] || '/img/default.jpg';
+    const placeholder = imageBySegment[segment] || '/img/default.svg';
     return comerciosArray.map((comercio) => ({
       id: comercio.comercioId,
       name: comercio.razaoSocial,
@@ -136,13 +136,18 @@ export default function HomePage() {
     }));
   };
 
+  const ensureProducts = (arr: ApiComercio[] | undefined, segment: keyof typeof imageBySegment) => {
+    const formatted = formatProductsForCarousel(arr || [], segment);
+    return formatted && formatted.length > 0 ? formatted : sampleProducts;
+  };
+
   // Produtos de fallback enquanto carrega ou em caso de erro
   const sampleProducts = [
-    { id: 1, name: 'Pizza Margherita', restaurant: 'Bella Itália', price: 'R$ 39,90', image: '/img/pizza.jpg' },
-    { id: 2, name: 'Sushi Combo', restaurant: 'Tokyo Bar', price: 'R$ 59,90', image: '/img/sushi.jpg' },
-    { id: 3, name: 'Hambúrguer Artesanal', restaurant: 'Burger House', price: 'R$ 29,90', image: '/img/burger.jpg' },
-    { id: 4, name: 'Churrasco Gourmet', restaurant: 'Costela & Cia', price: 'R$ 79,90', image: '/img/churrasco.jpg' },
-    { id: 5, name: 'Prato Executivo', restaurant: 'Sabor & Arte', price: 'R$ 25,00', image: '/img/prato.jpg' },
+    { id: 1, name: 'Pizza Margherita', restaurant: 'Bella Itália', price: 'R$ 39,90', image: '/img/pizza.svg' },
+    { id: 2, name: 'Sushi Combo', restaurant: 'Tokyo Bar', price: 'R$ 59,90', image: '/img/sushi.svg' },
+    { id: 3, name: 'Hambúrguer Artesanal', restaurant: 'Burger House', price: 'R$ 29,90', image: '/img/burger.svg' },
+    { id: 4, name: 'Churrasco Gourmet', restaurant: 'Costela & Cia', price: 'R$ 79,90', image: '/img/churrasco.svg' },
+    { id: 5, name: 'Prato Executivo', restaurant: 'Sabor & Arte', price: 'R$ 25,00', image: '/img/prato.svg' },
   ];
 
   return (
@@ -169,6 +174,8 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Debug panel removido */}
+
         {/* === GRID DE FILTROS === */}
         <div className="flex flex-wrap justify-between gap-3 sm:gap-5 mb-10 w-full">
           {filters.map((filter) => (
@@ -192,28 +199,28 @@ export default function HomePage() {
             <ProductCarousel
               title="Restaurantes"
               color="#00a944"
-              products={formatProductsForCarousel(comercios.restaurantes, 'restaurantes') || sampleProducts}
+              products={ensureProducts(comercios.restaurantes, 'restaurantes')}
               seeMoreLink="/categoria/restaurantes"
             />
 
             <ProductCarousel
               title="Mercados"
               color="#FFAD56"
-              products={formatProductsForCarousel(comercios.mercados, 'mercados') || sampleProducts}
+              products={ensureProducts(comercios.mercados, 'mercados')}
               seeMoreLink="/categoria/mercados"
             />
 
             <ProductCarousel
               title="Farmácias"
               color="#FF5656"
-              products={formatProductsForCarousel(comercios.farmacias, 'farmacias') || sampleProducts}
+              products={ensureProducts(comercios.farmacias, 'farmacias')}
               seeMoreLink="/categoria/farmacias"
             />
 
             <ProductCarousel
               title="Outros Serviços"
               color="#5686FF"
-              products={formatProductsForCarousel(comercios.outros, 'outros') || sampleProducts}
+              products={ensureProducts(comercios.outros, 'outros')}
               seeMoreLink="/categoria/outros"
             />
           </>

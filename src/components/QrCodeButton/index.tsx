@@ -6,22 +6,11 @@ import QrPopup from '../QrCodePopup';
 
 export default function QrCodeButton() {
   const [open, setOpen] = useState(false);
-  const [randomCode, setRandomCode] = useState('');
-
-  const generateCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  };
-
-  const handleClick = () => {
-    setRandomCode(generateCode());
-    setOpen(true);
-  };
 
   return (
     <>
       <button
-        onClick={handleClick}
+        onClick={() => setOpen(true)}
         className="
           fixed
           bottom-24
@@ -43,7 +32,7 @@ export default function QrCodeButton() {
         <QrCode size={28} />
       </button>
 
-      {open && <QrPopup code={randomCode} onClose={() => setOpen(false)} />}
+      {open && <QrPopup onClose={() => setOpen(false)} />}
     </>
   );
 }

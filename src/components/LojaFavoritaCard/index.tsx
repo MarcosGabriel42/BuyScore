@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Star } from 'lucide-react';
 
 interface LojaFavoritaCardProps {
-  id: number;
+  id: number | string;
   nome: string;
   categoria: string;
   corCategoria?: string;

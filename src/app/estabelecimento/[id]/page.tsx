@@ -5,8 +5,10 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import StoreCatalog from "@/components/StoreCatalog";
+import ProductCard from "@/components/ProductCard";
 import QrCodeButton from "@/components/QrCodeButton";
+import FavoriteButton from "@/components/FavoriteButton";
+
 
 export default function EstabelecimentoPage() {
   const { id } = useParams();
@@ -48,6 +50,7 @@ export default function EstabelecimentoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center pb-20">
+      
       {/* Banner do estabelecimento */}
       <div className="relative w-full h-56 sm:h-72 md:h-80 bg-gray-300">
         <Image
@@ -70,34 +73,33 @@ export default function EstabelecimentoPage() {
             </div>
 
             {/* Estrela de favorito */}
-            <button
-              onClick={() => setFavorito(!favorito)}
-              className="p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-40 transition"
-              aria-label="Favoritar estabelecimento"
-            >
-              <Star
-                size={28}
-                className={`${
-                  favorito ? "fill-yellow-400 text-yellow-400" : "text-white"
-                } transition`}
-              />
-            </button>
+            <FavoriteButton 
+              isFavorite={favorito}
+              onToggle={() => setFavorito(!favorito)}
+            />
           </div>
         </div>
       </div>
 
-      {/* Catálogo de produtos */}
+      {/* Catálogo reutilizando o mesmo ProductCard */}
       <div className="w-full max-w-6xl px-4 py-8">
-        <StoreCatalog
-          category={estabelecimento.categoria}
-          color="#016DA7"
-          products={estabelecimento.produtos}
-        />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {estabelecimento.produtos.map((product) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              restaurant={estabelecimento.nome}  // opcional
+              price={product.price}
+              image={product.image}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Menu de navegação inferior */}
       <div className="fixed bottom-0 w-full max-w-6xl">
-        <QrCodeButton />      
+        <QrCodeButton />
         <BottomNav />
       </div>
     </div>

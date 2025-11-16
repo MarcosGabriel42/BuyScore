@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
 interface Product {
-  id: number;
+  id: number | string;
   name: string;
   restaurant: string;
   price: string;

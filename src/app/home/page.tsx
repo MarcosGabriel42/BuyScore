@@ -6,22 +6,23 @@ import Link from 'next/link';
 import BottomNav from '@/components/BottomNav';
 import ProductCarousel from '@/components/ProductCarousel';
 import QrCodeButton from '@/components/QrCodeButton';
-import { auth, API_ENDPOINTS } from '@/utils/auth';
+import { auth } from '@/utils/auth';
 
-interface Comercio {
-  id: number;
-  name: string;
-  restaurant?: string;
-  price?: string;
-  image?: string;
-  setor?: string;
+// Dados vindos da nova API /comercio/top-pontos
+interface ApiComercio {
+  comercioId: string;
+  razaoSocial: string;
+  descricao?: string;
+  seguimento?: string;
+  fotoUsuario?: string;
+  pontosDoCliente?: number;
 }
 
 interface ComercioResponse {
-  restaurantes?: Comercio[];
-  mercados?: Comercio[];
-  farmacias?: Comercio[];
-  outros?: Comercio[];
+  restaurantes?: ApiComercio[];
+  mercados?: ApiComercio[];
+  farmacias?: ApiComercio[];
+  outros?: ApiComercio[];
 }
 
 export default function HomePage() {
@@ -47,20 +48,58 @@ export default function HomePage() {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      const response = await fetch(API_ENDPOINTS.TOP_COMERCIOS, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      // Helper para buscar por seguimento com limite fixo 5
+      const fetchBySegment = async (segment: string): Promise<ApiComercio[]> => {
+        const url = `http://localhost:8081/comercio/top-pontos?seguimento=${encodeURIComponent(segment)}&limite=5`;
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!res.ok) {
+          throw new Error(`Erro ao buscar ${segment}: ${res.status}`);
+        }
+        const json = await res.json();
+        // Normaliza: se vier objeto único, transforma em array; se vier paginado, tenta json.content
+        const items = Array.isArray(json)
+          ? json
+          : Array.isArray(json?.content)
+          ? json.content
+          : json
+          ? [json]
+          : [];
+        return items as ApiComercio[];
+      };
 
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar comércios: ${response.status}`);
+      // Busca em paralelo para todos os segmentos
+      const [restaurantesRes, mercadosRes, farmaciasRes, outrosRes] = await Promise.allSettled([
+        fetchBySegment('restaurantes'),
+        fetchBySegment('mercados'),
+        fetchBySegment('farmacias'),
+        fetchBySegment('outros'),
+      ]);
+
+      const nextState: ComercioResponse = {};
+      let partialErrors: string[] = [];
+
+      if (restaurantesRes.status === 'fulfilled') nextState.restaurantes = restaurantesRes.value;
+      else partialErrors.push(restaurantesRes.reason?.message || 'Falha em restaurantes');
+
+      if (mercadosRes.status === 'fulfilled') nextState.mercados = mercadosRes.value;
+      else partialErrors.push(mercadosRes.reason?.message || 'Falha em mercados');
+
+      if (farmaciasRes.status === 'fulfilled') nextState.farmacias = farmaciasRes.value;
+      else partialErrors.push(farmaciasRes.reason?.message || 'Falha em farmácias');
+
+      if (outrosRes.status === 'fulfilled') nextState.outros = outrosRes.value;
+      else partialErrors.push(outrosRes.reason?.message || 'Falha em outros');
+
+      setComercios(nextState);
+      if (partialErrors.length) {
+        setError(partialErrors.join(' | '));
       }
-
-      const data = await response.json();
-      setComercios(data);
 
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar comércios');
@@ -75,14 +114,25 @@ export default function HomePage() {
     fetchComercios();
   }, []);
 
+  // Placeholder de imagens "commitadas" por segmento (temporário)
+  const imageBySegment: Record<string, string> = {
+    restaurantes: '/img/pizza.jpg',
+    mercados: '/img/prato.jpg',
+    farmacias: '/img/sushi.jpg',
+    outros: '/img/burger.jpg',
+  };
+
   // Função para converter dados da API para o formato esperado pelo ProductCarousel
-  const formatProductsForCarousel = (comerciosArray: Comercio[] = []) => {
-    return comerciosArray.map(comercio => ({
-      id: comercio.id,
-      name: comercio.name,
-      restaurant: comercio.restaurant || 'Estabelecimento',
-      price: comercio.price || 'Consultar preço',
-      image: comercio.image || '/img/default.jpg'
+  // Para imagens: por enquanto usaremos placeholders estáticos "commitados" no repositório.
+  const formatProductsForCarousel = (comerciosArray: ApiComercio[] = [], segment: keyof typeof imageBySegment) => {
+    const placeholder = imageBySegment[segment] || '/img/default.jpg';
+    return comerciosArray.map((comercio) => ({
+      id: comercio.comercioId,
+      name: comercio.razaoSocial,
+      restaurant: comercio.descricao || comercio.seguimento || 'Estabelecimento',
+      // Exibimos os pontos do cliente como "preço" por falta de campo específico
+      price: typeof comercio.pontosDoCliente === 'number' ? `${comercio.pontosDoCliente} pontos` : '—',
+      image: placeholder,
     }));
   };
 
@@ -142,28 +192,28 @@ export default function HomePage() {
             <ProductCarousel
               title="Restaurantes"
               color="#00a944"
-              products={formatProductsForCarousel(comercios.restaurantes) || sampleProducts}
+              products={formatProductsForCarousel(comercios.restaurantes, 'restaurantes') || sampleProducts}
               seeMoreLink="/categoria/restaurantes"
             />
 
             <ProductCarousel
               title="Mercados"
               color="#FFAD56"
-              products={formatProductsForCarousel(comercios.mercados) || sampleProducts}
+              products={formatProductsForCarousel(comercios.mercados, 'mercados') || sampleProducts}
               seeMoreLink="/categoria/mercados"
             />
 
             <ProductCarousel
               title="Farmácias"
               color="#FF5656"
-              products={formatProductsForCarousel(comercios.farmacias) || sampleProducts}
+              products={formatProductsForCarousel(comercios.farmacias, 'farmacias') || sampleProducts}
               seeMoreLink="/categoria/farmacias"
             />
 
             <ProductCarousel
               title="Outros Serviços"
               color="#5686FF"
-              products={formatProductsForCarousel(comercios.outros) || sampleProducts}
+              products={formatProductsForCarousel(comercios.outros, 'outros') || sampleProducts}
               seeMoreLink="/categoria/outros"
             />
           </>

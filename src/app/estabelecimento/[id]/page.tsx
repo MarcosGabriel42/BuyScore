@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
+import Base64Image from '@/components/Base64Image';
 import BottomNav from '@/components/BottomNav';
 import ProductCard from '@/components/ProductCard';
 import QrCodeButton from '@/components/QrCodeButton';
@@ -111,9 +111,10 @@ export default function EstabelecimentoPage() {
         setEstabelecimentoNome(first.comercio.razaoSocial || 'Estabelecimento');
         const seg = (first.comercio.seguimento || '').toLowerCase();
         setCategoria(seg);
-        // Ignorar imagens do JSON: usar placeholders por seguimento
+        // Usar foto do comercio ou fallback por seguimento
         const bannerPlaceholder = imageBySegment[seg] || '/img/default.svg';
-        setBanner(bannerPlaceholder);
+        const bannerImage = first.comercio.usuario?.fotoUsuario || bannerPlaceholder;
+        setBanner(bannerImage);
       }
     } catch (err: any) {
       setError(err?.message || 'Erro ao carregar produtos');
@@ -193,7 +194,7 @@ export default function EstabelecimentoPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center pb-20">
       {/* Banner do estabelecimento */}
       <div className="relative w-full h-56 sm:h-72 md:h-80 bg-gray-300">
-        <Image
+        <Base64Image
           src={banner}
           alt={estabelecimentoNome}
           fill
@@ -244,7 +245,7 @@ export default function EstabelecimentoPage() {
           </div>
         )}
 
-        {/* Grid de produtos (imagens ignoradas do JSON, usando placeholders) */}
+        {/* Grid de produtos com imagens do JSON ou fallback */}
         {!isLoading && produtos.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {produtos.map((p) => {
@@ -258,7 +259,7 @@ export default function EstabelecimentoPage() {
                 name={p.nome}
                 restaurant={estabelecimentoNome}
                 price={String(pontos)}
-                image={placeholder}
+                image={p.fotoProduto || placeholder} // Usa foto do JSON ou fallback
                 priceSuffix="Pontos" // exibe 'Pontos'
                 href={`/product/${p.id}`} // redireciona para página do produto
               />

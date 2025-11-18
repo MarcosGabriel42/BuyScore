@@ -60,14 +60,9 @@ export default function ProductPage() {
   const produtoId = id as string;
 
   const [showPopup, setShowPopup] = useState(false);
-  const [code, setCode] = useState('');
   const [produto, setProduto] = useState<ApiProduto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-
-  // Função para gerar código aleatório de 5 caracteres
-  const generateCode = () =>
-    Math.random().toString(36).substring(2, 7).toUpperCase();
 
   const fetchProduto = async () => {
     try {
@@ -106,7 +101,6 @@ export default function ProductPage() {
   }, [produtoId]);
 
   const handleOpenPopup = () => {
-    setCode(generateCode());
     setShowPopup(true);
   };
 
@@ -152,7 +146,7 @@ export default function ProductPage() {
     restaurantId: produto.comercio.id,
     category: produto.comercio.seguimento || 'Outros',
     price: `${pontos} Pontos`,
-    image: placeholder, // usar placeholder por seguimento
+    image: produto.fotoProduto || placeholder, // Usa foto do JSON ou fallback
     description: produto.descricao || 'Sem descrição disponível.',
     address: addressText,
     hours: 'Horário não disponível', // API não retorna horário
@@ -163,7 +157,7 @@ export default function ProductPage() {
       <ProductDetailCard {...productData} onRedeem={handleOpenPopup} />
 
       {/* Popup */}
-      {showPopup && <QrPopup code={code} onClose={() => setShowPopup(false)} />}
+      {showPopup && <QrPopup onClose={() => setShowPopup(false)} />}
 
       <QrCodeButton />
       <BottomNav />

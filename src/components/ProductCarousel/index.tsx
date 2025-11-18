@@ -1,7 +1,7 @@
 'use client';
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Base64Image from '@/components/Base64Image';
 import { ChevronRight } from "lucide-react";
 
 interface Product {
@@ -48,7 +48,7 @@ export default function ProductCarousel({
             className="min-w-[70%] sm:min-w-[180px] md:min-w-[220px] bg-white rounded-xl shadow-md flex-shrink-0 cursor-pointer hover:scale-105 transition-transform snap-start"
           >
             <div className="relative w-full h-32 sm:h-36 rounded-t-xl overflow-hidden">
-              <Image
+              <Base64Image
                 src={product.image}
                 alt={product.name}
                 fill

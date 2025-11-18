@@ -149,7 +149,7 @@ export default function BuscaPage() {
                   restaurant={c.descricao || c.seguimento || 'Estabelecimento'}
                   price=""
                   priceSuffix=""
-                  image={placeholder}
+                  image={c.usuario?.fotoUsuario || placeholder} // Usa foto do JSON ou fallback
                   href={`/estabelecimento/${c.id}`}
                 />
               );

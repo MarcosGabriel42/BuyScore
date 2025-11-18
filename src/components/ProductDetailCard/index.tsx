@@ -1,7 +1,7 @@
 'use client';
 
-import Image from "next/image";
 import Link from "next/link";
+import Base64Image from '@/components/Base64Image';
 
 interface ProductDetailCardProps {
   id: string | number;
@@ -33,7 +33,7 @@ export default function ProductDetailCard({
   return (
     <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
       <div className="relative w-full h-60">
-        <Image src={image} alt={name} fill className="object-cover" />
+        <Base64Image src={image} alt={name} fill className="object-cover" />
       </div>
 
       <div className="p-5">

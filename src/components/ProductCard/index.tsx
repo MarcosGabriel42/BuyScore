@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import Base64Image from '@/components/Base64Image';
 
 interface ProductCardProps {
   id: number | string;
@@ -27,7 +27,7 @@ export default function ProductCard({
   const content = (
     <div className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform">
       <div className="relative w-full h-36 sm:h-40">
-        <Image src={image} alt={name} fill className="object-cover" />
+        <Base64Image src={image} alt={name} fill className="object-cover" />
       </div>
 
       <div className="p-3">

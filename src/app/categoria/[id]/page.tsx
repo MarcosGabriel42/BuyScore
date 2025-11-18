@@ -102,7 +102,7 @@ export default function CategoriaPage() {
       name: c.razaoSocial,
       restaurant: c.descricao || c.seguimento || 'Estabelecimento',
       price: typeof c.pontosDoCliente === 'number' ? String(c.pontosDoCliente) : '—',
-      image: placeholder,
+      image: c.fotoUsuario || placeholder, // Usa foto do JSON ou fallback
       href: `/estabelecimento/${c.comercioId}`, // navega para página do estabelecimento
     }));
   }, [items, categoryId]);

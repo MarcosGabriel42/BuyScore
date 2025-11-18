@@ -9,6 +9,7 @@ import { API_ENDPOINTS, auth } from "@/utils/auth";
 export default function ClienteForm() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string>("");
   const router = useRouter();
   const [form, setForm] = useState({
     nome: "",
@@ -31,6 +32,36 @@ export default function ClienteForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.id]: e.target.value });
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      setError('Por favor, selecione apenas arquivos de imagem.');
+      return;
+    }
+
+    // Validar tamanho (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    // Converter para base64
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setForm({ ...form, fotoUsuario: base64String });
+      setPhotoPreview(base64String);
+      setError('');
+    };
+    reader.onerror = () => {
+      setError('Erro ao carregar a imagem.');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleNextStep = (e: React.FormEvent) => {
@@ -66,7 +97,7 @@ export default function ClienteForm() {
         nome: form.nome,
         email: form.email,
         senha: form.senha,
-        fotoUsuario: form.fotoUsuario || "https://exemplo.com/foto-default.jpg", // URL padrão se não informada
+        fotoUsuario: form.fotoUsuario || "https://exemplo.com/foto-default.jpg", // Base64 ou URL padrão
         cep: form.cep,
         logradouro: form.logradouro,
         complemento: form.complemento,
@@ -142,7 +173,33 @@ export default function ClienteForm() {
             <input type="text" id="bairro" placeholder="Bairro" value={form.bairro} onChange={handleChange} className="border p-3 rounded w-full text-black" />
             <input type="text" id="cidade" placeholder="Cidade" value={form.cidade} onChange={handleChange} className="border p-3 rounded w-full text-black" />
             <input type="text" id="uf" placeholder="UF (ex: SP)" value={form.uf} onChange={handleChange} className="border p-3 rounded w-full text-black" maxLength={2} />
-            <input type="url" id="fotoUsuario" placeholder="URL da foto (opcional)" value={form.fotoUsuario} onChange={handleChange} className="border p-3 rounded w-full text-black" />
+            
+            {/* Upload de foto */}
+            <div className="space-y-2">
+              <label htmlFor="foto" className="block text-sm font-medium text-gray-700">
+                Foto de perfil (opcional)
+              </label>
+              <input
+                type="file"
+                id="foto"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="border p-3 rounded w-full text-black file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#016DA7] file:text-white hover:file:bg-blue-700"
+              />
+              {photoPreview && (
+                <div className="flex justify-center">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-300">
+                    <Image
+                      src={photoPreview}
+                      alt="Preview"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            
             <input type="password" id="senha" placeholder="Senha" value={form.senha} onChange={handleChange} className="border p-3 rounded w-full text-black" />
             <input type="password" id="confirmarSenha" placeholder="Confirmar senha" value={form.confirmarSenha} onChange={handleChange} className="border p-3 rounded w-full text-black" />
             <button 

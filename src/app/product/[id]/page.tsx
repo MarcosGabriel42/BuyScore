@@ -45,6 +45,17 @@ interface ApiComercio {
   vendas?: number;
 }
 
+interface ApiEndereco {
+  id: string;
+  cep: string;
+  logradouro: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  numero: number;
+  uf: string;
+}
+
 interface ApiProduto {
   id: string;
   nome: string;
@@ -53,6 +64,7 @@ interface ApiProduto {
   ativo: boolean;
   fotoProduto?: string;
   comercio: ApiComercio;
+  endereco?: ApiEndereco;
 }
 
 export default function ProductPage() {
@@ -67,6 +79,7 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
+  // Busca produto via BFF (porta 3000), espera {sucesso, produto}
   const fetchProduto = async () => {
     try {
       setIsLoading(true);
@@ -75,7 +88,7 @@ export default function ProductPage() {
       const token = auth.getToken();
       if (!token) throw new Error('Token de autenticação não encontrado');
 
-      const url = `http://localhost:8081/produto/${encodeURIComponent(produtoId)}`;
+      const url = `http://localhost:3000/produto/${encodeURIComponent(produtoId)}`;
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -89,7 +102,10 @@ export default function ProductPage() {
       }
 
       const json = await res.json();
-      setProduto(json as ApiProduto);
+      if (!json?.sucesso || !json?.produto) {
+        throw new Error('Produto não encontrado');
+      }
+      setProduto(json.produto as ApiProduto);
     } catch (err: any) {
       setError(err?.message || 'Erro ao carregar produto');
       setProduto(null);
@@ -183,12 +199,20 @@ export default function ProductPage() {
     );
   }
 
-  // Mapear dados do produto para o formato esperado pelo ProductDetailCard
   const seguimento = (produto.comercio.seguimento || 'outros').toLowerCase();
   const placeholder = imageBySegment[seguimento] || '/img/default.svg';
   const pontos = Number.isFinite(produto.valor) ? Math.round(produto.valor) : 0;
 
-  const endereco = produto.comercio.usuario?.endereco;
+  // Debug: mostrar o produto no console
+  if (typeof window !== 'undefined' && produto) {
+    // eslint-disable-next-line no-console
+    console.log('Produto carregado:', produto);
+  }
+
+  // Tenta pegar o endereço do produto, senão do comércio, senão do usuário
+  const endereco = produto.endereco
+    || produto.comercio?.usuario?.endereco;
+
   const addressText = endereco
     ? `${endereco.logradouro}, ${endereco.numero} - ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf}`
     : 'Endereço não disponível';

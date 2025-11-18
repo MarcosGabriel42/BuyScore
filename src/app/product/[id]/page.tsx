@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ProductDetailCard from '@/components/ProductDetailCard';
-import QrPopup from '@/components/QrCodePopup';
+import AutoRedeemPopup from '@/components/QrCodePopup/AutoRedeem';
 import BottomNav from '@/components/BottomNav';
 import QrCodeButton from '@/components/QrCodeButton';
 import { auth } from '@/utils/auth';
@@ -59,7 +59,10 @@ export default function ProductPage() {
   const { id } = useParams();
   const produtoId = id as string;
 
-  const [showPopup, setShowPopup] = useState(false);
+  const [showAutoRedeem, setShowAutoRedeem] = useState(false);
+  const [redeemCode, setRedeemCode] = useState<string | null>(null);
+  const [redeeming, setRedeeming] = useState<boolean>(false);
+  const [redeemError, setRedeemError] = useState<string>('');
   const [produto, setProduto] = useState<ApiProduto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -100,8 +103,59 @@ export default function ProductPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [produtoId]);
 
-  const handleOpenPopup = () => {
-    setShowPopup(true);
+  const fetchRedeemCode = async (idProduto: string): Promise<string> => {
+    const token = auth.getToken();
+    if (!token) throw new Error('Token de autenticação não encontrado');
+
+    const url = `http://localhost:8081/compra`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ produtoId: idProduto }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Erro ao gerar código: ${res.status}`);
+    }
+
+    // A API retorna uma string com o código
+    let text = (await res.text())?.trim();
+    // Remover aspas caso retorne como JSON string: "ABC123"
+    if (text.startsWith('"') && text.endsWith('"')) {
+      text = text.slice(1, -1);
+    }
+    if (!text) {
+      // fallback: tentar JSON com campos comuns
+      try {
+        const json = await res.json();
+        const codigo = json?.codigo ?? json?.data?.codigo ?? json?.code ?? '';
+        if (!codigo) throw new Error('Código não retornado pela API');
+        return String(codigo);
+      } catch {
+        throw new Error('Código não retornado pela API');
+      }
+    }
+    return text;
+  };
+
+  const handleRedeem = async () => {
+    try {
+      setRedeeming(true);
+      setRedeemError('');
+      const codigo = await fetchRedeemCode(produtoId);
+      setRedeemCode(codigo);
+      setShowAutoRedeem(true);
+    } catch (e: any) {
+      // Se houver erro, abre o popup mesmo assim para mostrar "Sem saldo"
+      setRedeemCode(null);
+      setRedeemError(e?.message || 'Erro ao iniciar resgate');
+      setShowAutoRedeem(true);
+    } finally {
+      setRedeeming(false);
+    }
   };
 
   if (isLoading) {
@@ -154,10 +208,19 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 px-4 py-8">
-      <ProductDetailCard {...productData} onRedeem={handleOpenPopup} />
+      <ProductDetailCard {...productData} onRedeem={handleRedeem} />
 
-      {/* Popup */}
-      {showPopup && <QrPopup onClose={() => setShowPopup(false)} />}
+      {/* Popup mostrando o código ou "Sem saldo" */}
+      {showAutoRedeem && (
+        <AutoRedeemPopup 
+          codigo={redeemCode} 
+          error={redeemError}
+          onClose={() => {
+            setShowAutoRedeem(false);
+            setRedeemError('');
+          }} 
+        />
+      )}
 
       <QrCodeButton />
       <BottomNav />

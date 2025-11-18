@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { API_ENDPOINTS, auth } from "@/utils/auth";
+import { auth } from "@/utils/auth";
 
 export default function ClienteForm() {
   const [step, setStep] = useState(1);
@@ -107,7 +107,8 @@ export default function ClienteForm() {
         uf: form.uf
       };
 
-      const response = await fetch(API_ENDPOINTS.CADASTRO_CLIENTE, {
+      // Chama nosso proxy local para evitar CORS
+      const response = await fetch(`/api/bff/cliente`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,19 +117,20 @@ export default function ClienteForm() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erro ao realizar cadastro");
+        let msg = "Erro ao realizar cadastro";
+        try {
+          const err = await response.json();
+          msg = err?.message || msg;
+        } catch {}
+        throw new Error(msg);
       }
 
       const data = await response.json();
-      console.log("Cadastro realizado com sucesso:", data);
-      
-      // Salvar token retornado pela API de cadastro
-      if (data.token) {
+      // Esperado do BFF: { sucesso: boolean, token: string }
+      if (data?.sucesso === true && typeof data?.token === 'string' && data.token.length > 0) {
         auth.saveToken(data.token);
-      } else if (typeof data === 'string') {
-        // Caso o backend retorne apenas o token como string
-        auth.saveToken(data);
+      } else {
+        throw new Error('Falha no cadastro. Tente novamente.');
       }
       
       // Redirecionar diretamente para home (usuário já está logado)

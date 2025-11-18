@@ -47,9 +47,10 @@ export const auth = {
 
 // Constantes da API
 export const API_BASE_URL = '/api/backend';
+export const BFF_BASE_URL = 'http://localhost:3000';
 
 export const API_ENDPOINTS = {
-  LOGIN: `${API_BASE_URL}/auth/login`,
+  LOGIN: `${BFF_BASE_URL}/login`,
   REGISTER: `${API_BASE_URL}/auth/register`,
   CADASTRO_CLIENTE: `${API_BASE_URL}/cliente`,
   TOP_COMERCIOS: `${API_BASE_URL}/comercio/top5/setores-principais`,

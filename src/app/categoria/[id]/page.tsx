@@ -47,7 +47,7 @@ export default function CategoriaPage() {
     return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
   }, [categoryId]);
 
-  // Busca até 100 itens do seguimento
+  // Busca até 100 itens do seguimento usando o BFF
   const fetchCategoria = async (segment: string) => {
     try {
       setIsLoading(true);
@@ -56,7 +56,7 @@ export default function CategoriaPage() {
       const token = auth.getToken();
       if (!token) throw new Error('Token de autenticação não encontrado');
 
-      const url = `http://localhost:8081/comercio/top-seguimento?seguimento=${encodeURIComponent(segment)}&limite=100`;
+      const url = `http://localhost:3000/comercio/top-seguimento?seguimento=${encodeURIComponent(segment)}&limite=100`;
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -70,12 +70,9 @@ export default function CategoriaPage() {
       }
 
       const json = await res.json();
-      const list = Array.isArray(json)
-        ? json
-        : Array.isArray(json?.content)
-        ? json.content
-        : json
-        ? [json]
+      // Extrai o array de comércios da resposta do BFF
+      const list = json?.sucesso && Array.isArray(json?.comercios)
+        ? json.comercios
         : [];
 
       setItems(list as ApiComercio[]);
@@ -94,17 +91,27 @@ export default function CategoriaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId]);
 
-  // Mapeia para o formato usado por ProductCard
+  // Mapeia para o formato usado por ProductCard, tratando base64/data:image
   const products = useMemo(() => {
     const placeholder = imageBySegment[categoryId] || '/img/default.svg';
-    return items.map((c) => ({
-      id: c.comercioId,
-      name: c.razaoSocial,
-      restaurant: c.descricao || c.seguimento || 'Estabelecimento',
-      price: typeof c.pontosDoCliente === 'number' ? String(c.pontosDoCliente) : '—',
-      image: c.fotoUsuario || placeholder, // Usa foto do JSON ou fallback
-      href: `/estabelecimento/${c.comercioId}`, // navega para página do estabelecimento
-    }));
+    return items.map((c) => {
+      let image = placeholder;
+      if (c.fotoUsuario && c.fotoUsuario.trim() !== '') {
+        if (c.fotoUsuario.startsWith('data:image')) {
+          image = c.fotoUsuario;
+        } else {
+          image = `data:image/jpeg;base64,${c.fotoUsuario}`;
+        }
+      }
+      return {
+        id: c.comercioId,
+        name: c.razaoSocial,
+        restaurant: c.descricao || c.seguimento || 'Estabelecimento',
+        price: typeof c.pontosDoCliente === 'number' ? String(c.pontosDoCliente) : '—',
+        image,
+        href: `/estabelecimento/${c.comercioId}`,
+      };
+    });
   }, [items, categoryId]);
 
   return (

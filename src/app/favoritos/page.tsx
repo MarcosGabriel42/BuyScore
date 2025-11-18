@@ -41,7 +41,7 @@ export default function FavoritosPage() {
       const token = auth.getToken();
       if (!token) throw new Error('Token de autenticação não encontrado');
 
-      const res = await fetch('http://localhost:8081/cliente/comercio-favoritos', {
+      const res = await fetch('http://localhost:3000/cliente/comercio-favoritos', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,7 +54,10 @@ export default function FavoritosPage() {
       }
 
       const json = await res.json();
-      const items: FavoritoApi[] = Array.isArray(json) ? json : [];
+      // Extrai o array de favoritos da resposta do BFF
+      const items: FavoritoApi[] = json?.sucesso && Array.isArray(json?.favoritos)
+        ? json.favoritos
+        : [];
       setFavoritos(items);
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar favoritos');

@@ -82,7 +82,7 @@ export default function EstabelecimentoPage() {
       const token = auth.getToken();
       if (!token) throw new Error('Token de autenticação não encontrado');
 
-      const url = `http://localhost:8081/produto/comercio/${encodeURIComponent(comercioId)}`;
+      const url = `http://localhost:3000/produto/comercio/${encodeURIComponent(comercioId)}`;
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -95,12 +95,9 @@ export default function EstabelecimentoPage() {
       }
 
       const json = await res.json();
-      const items: ApiProduto[] = Array.isArray(json)
-        ? json
-        : Array.isArray(json?.content)
-        ? json.content
-        : json
-        ? [json]
+      // Extrai o array de produtos da resposta do BFF
+      const items: ApiProduto[] = json?.sucesso && Array.isArray(json?.produtos)
+        ? json.produtos
         : [];
 
       setProdutos(items);
@@ -129,7 +126,7 @@ export default function EstabelecimentoPage() {
       const token = auth.getToken();
       if (!token) return;
 
-      const url = `http://localhost:8081/cliente/comercio-favoritos`;
+      const url = `http://localhost:3000/cliente/comercio-favoritos`;
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -141,7 +138,9 @@ export default function EstabelecimentoPage() {
       if (!res.ok) return;
 
       const json = await res.json();
-      const favoritos = Array.isArray(json) ? json : [];
+      const favoritos = json?.sucesso && Array.isArray(json?.favoritos)
+        ? json.favoritos
+        : [];
       
       // Verifica se o comercioId está na lista de favoritos
       const isFav = favoritos.some((fav: any) => fav.id === comercioId);
@@ -166,7 +165,7 @@ export default function EstabelecimentoPage() {
       const token = auth.getToken();
       if (!token) throw new Error('Token de autenticação não encontrado');
 
-      const url = `http://localhost:8081/cliente/comercio-favoritos/${encodeURIComponent(comercioId)}`;
+      const url = `http://localhost:3000/cliente/comercio-favoritos/${encodeURIComponent(comercioId)}`;
       const method = favorito ? 'DELETE' : 'POST';
 
       const res = await fetch(url, {

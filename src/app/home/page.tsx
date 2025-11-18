@@ -50,7 +50,7 @@ export default function HomePage() {
 
       // Helper para buscar por seguimento com limite fixo 5
       const fetchBySegment = async (segment: string): Promise<ApiComercio[]> => {
-        const url = `http://localhost:8081/comercio/top-seguimento?seguimento=${encodeURIComponent(segment)}&limite=5`;
+        const url = `http://localhost:3000/comercio/top-seguimento?seguimento=${encodeURIComponent(segment)}&limite=5`;
         const res = await fetch(url, {
           method: 'GET',
           headers: {
@@ -62,13 +62,9 @@ export default function HomePage() {
           throw new Error(`Erro ao buscar ${segment}: ${res.status}`);
         }
         const json = await res.json();
-        // Normaliza: se vier objeto único, transforma em array; se vier paginado, tenta json.content
-        const items = Array.isArray(json)
-          ? json
-          : Array.isArray(json?.content)
-          ? json.content
-          : json
-          ? [json]
+        // Extrai o array de comércios da resposta do BFF
+        const items = json?.sucesso && Array.isArray(json?.comercios)
+          ? json.comercios
           : [];
         return items as ApiComercio[];
       };
@@ -123,17 +119,28 @@ export default function HomePage() {
   };
 
   // Função para converter dados da API para o formato esperado pelo ProductCarousel
-  // Para imagens: por enquanto usaremos placeholders estáticos "commitados" no repositório.
+  // Para imagens: usa fotoUsuario se vier preenchido (base64 ou data:image), senão placeholder local.
   const formatProductsForCarousel = (comerciosArray: ApiComercio[] = [], segment: keyof typeof imageBySegment) => {
     const placeholder = imageBySegment[segment] || '/img/default.jpg';
-    return comerciosArray.map((comercio) => ({
-      id: comercio.comercioId,
-      name: comercio.razaoSocial,
-      restaurant: comercio.descricao || comercio.seguimento || 'Estabelecimento',
-      // Exibimos os pontos do cliente como "preço" por falta de campo específico
-      price: typeof comercio.pontosDoCliente === 'number' ? `${comercio.pontosDoCliente} pontos` : '—',
-      image: placeholder,
-    }));
+    return comerciosArray.map((comercio) => {
+      let image = placeholder;
+      if (comercio.fotoUsuario && comercio.fotoUsuario.trim() !== '') {
+        if (comercio.fotoUsuario.startsWith('data:image')) {
+          image = comercio.fotoUsuario;
+        } else {
+          // Assume que é base64 puro (jpeg)
+          image = `data:image/jpeg;base64,${comercio.fotoUsuario}`;
+        }
+      }
+      return {
+        id: comercio.comercioId,
+        name: comercio.razaoSocial,
+        restaurant: comercio.descricao || comercio.seguimento || 'Estabelecimento',
+        // Exibimos os pontos do cliente como "preço" por falta de campo específico
+        price: typeof comercio.pontosDoCliente === 'number' ? `${comercio.pontosDoCliente} pontos` : '—',
+        image,
+      };
+    });
   };
 
   // Produtos de fallback enquanto carrega ou em caso de erro
